@@ -1,40 +1,63 @@
 # Su Şişesi Doluluk Ölçer
 
-Su Şişesi Doluluk Ölçer, tek bir fotoğraftan şişenin doluluk oranını tahmin eden Türkçe bir MATLAB masaüstü uygulamasıdır. Şişenin dış hatları ve su çizgisi algılandığında fotoğraf üzerinde işaretlenir ve sonuç yüzde olarak gösterilir.
+Bir şişe fotoğrafını açıp su çizgisini gösteren ve doluluğu yüzde olarak tahmin eden Türkçe MATLAB masaüstü uygulaması. İşlem yerel olarak yapılır. Python ve ek MATLAB toolbox gerekmez.
 
 ## Çalıştırma
 
-MATLAB R2025a veya üzeri gerekir. Python ve ek MATLAB toolbox kurulumu gerekmez.
-
-1. Proje klasörünü MATLAB’da açın.
-2. Command Window’da şu komutu çalıştırın.
+1. ZIP dosyasını açın. MATLAB'da **Current Folder** olarak `su-sisesi-matlab` klasörünü seçin.
+2. **Command Window**'da şu komutu çalıştırın.
 
    ```matlab
    SuSisesiDoluluk
    ```
 
-3. **Fotoğraf Aç** ile kendi görselinizi seçin. **Örneği Aç** düğmesi %75 dolulukla oluşturulmuş sentetik örneği yükler.
+3. **Fotoğraf Aç** ile JPG, PNG, TIFF veya HEIC seçin. **Örneği Aç** düğmesiyle %75'lik sentetik örneği deneyebilirsiniz.
 
-## Kullanım
+MATLAB R2025a ve sonrası için yazıldı. Testler macOS üzerinde MATLAB R2026b Update 1 ile çalıştırıldı.
 
-- **Otomatik Ölç** şişenin sınırlarını ve su çizgisini arar. Şişenin farklı yüksekliklerdeki genişliğini hesaba katarak yaklaşık hacim oranı üretir.
-- **Su Çizgisini İşaretle** algılanan şişe sınırlarını kullanır ve su seviyesini fotoğraf üzerinde düzeltmenizi sağlar.
-- **Şişeyi Elle Çerçevele** şişenin iç hacmini çevreleyen kutunun sol üst ve sağ alt köşelerini seçmenizi ister. Ardından su çizgisine tıkladığınızda uygulama yükseklik oranını gösterir. Şişe daralıp genişliyorsa yükseklik oranı ile hacim oranı farklı olabilir.
+## Fotoğrafı çekme ve sonucu düzeltme
 
-Fotoğrafı yandan çekin. Şişenin tamamı kadrajda, şişe dik ve su çizgisi görünür olsun. Düz bir arka plan ve yumuşak ışık otomatik algılamaya yardımcı olur.
+- Tek şişeyi dik tutun ve tamamı kadraja girecek şekilde yandan, mümkünse şişenin orta hizasından çekin. Sağda ve solda boşluk bırakın. Düz bir fon ve yumuşak ışık kullanın.
+- Turkuaz çizgi su yüzeyinden farklı bir yerdeyse **Su Çizgisini İşaretle** düğmesine basıp doğru seviyeye tıklayın. Bu işlem algılanan şişe profilini kullanır.
+- Şişenin sınırı bulunamadıysa **Şişeyi Elle Çerçevele** düğmesine basın. Kapağı dışarıda bırakıp şişenin iç hacmini çevreleyen kutunun önce sol üst, sonra sağ alt köşesini seçin. Son olarak su seviyesine tıklayın. Bu modda ekranda yükseklik oranı gösterilir. Bir şişenin boş veya dolu olduğunu biliyorsanız seviyeyi sırasıyla alt veya üst sınıra işaretleyebilirsiniz.
 
-## Test sonuçları
+## Ölçümün kapsamı
 
-MATLAB R2026b’de altı sentetik testte bilinen doluluk oranı ile tahmin arasındaki en büyük fark **0,6 yüzde puanı** oldu.
+Otomatik mod, şişenin dış hatlarını ve gövdesindeki yatay görüntü değişimini arar. İç hacim, satır satır görünen genişliğin karesiyle ağırlıklandırılır. Su çizgisinin altında kalan toplam ağırlık yüzdeye çevrilir. Bu yaklaşım, kamera açısı düz olduğunda ve şişenin yatay kesitleri benzer şekli koruduğunda hacim için yaklaşık bir sonuç verir.
 
-Wikimedia Commons’tan alınan yedi gerçek fotoğrafın hiçbirinde otomatik mod şişe sınırlarını bulamadı ve yüzde üretmedi. Elle işaretleme iki fotoğrafta çalıştı ve **%52** ile **%85** yükseklik oranı gösterdi. Bu fotoğrafların ölçülmüş su hacimleri bilinmediği için gerçek fotoğraflarda hacim doğruluğu henüz doğrulanmadı.
+Opak şişe veya etiketten dolayı su çizgisi görünmüyorsa doluluk fotoğraftan belirlenemez. Desenli fon, güçlü gölge, yansıma, eğik çekim ve etiket otomatik algılamayı bozabilir. Su çizgisinin görünmediği tam dolu veya boş şişeler için uygulama otomatik yüzde vermeyebilir.
 
-Sentetik testleri yeniden çalıştırmak için:
+## Örnekler ve test
+
+`ornekler/` klasöründe bilinen %25, %50 ve %75 hacim oranlarıyla oluşturulmuş sentetik şişe görselleri vardır. Altı sentetik testte hedef oran ile tahmin arasındaki en büyük fark 0,6 yüzde puanıydı.
 
 ```matlab
 testBottleFill
 ```
 
-## Sınırlamalar
+Arayüzü açmadan işlemek için:
 
-Opak şişelerde veya etiket su çizgisini kapattığında tek fotoğraftan doluluk belirlenemez. Yansıma, gölge, desenli arka plan ve eğik kamera açısı otomatik algılamayı bozabilir.
+```matlab
+sonuc = estimateBottleFill("ornekler/sise_75.png");
+disp(sonuc.percent)
+```
+
+Otomatik ölçüm yapılamadığında `sonuc.percent` değeri `NaN` olur ve `sonuc.message` açıklama içerir.
+
+### Gerçek fotoğraf testi
+
+Wikimedia Commons'tan indirilen yedi orijinal JPEG, elle kırpma veya ışık düzeltmesi uygulanmadan MATLAB R2026b Update 1'de test edildi. **Otomatik mod 7 fotoğrafın hiçbirinde şişe sınırını çıkaramadı ve yüzde göstermedi.**
+
+| Fotoğraf | Kaynak açıklaması | Elle işaretleme |
+| --- | --- | --- |
+| Gölgeli çekim | Yarıya yakın su | |
+| Etiketli PET şişe | Yarıya yakın su | %52 yükseklik oranı |
+| Sokakta asılı şişe | Yaklaşık yarı dolu | |
+| Şeffaf şişe | Boş | |
+| Yatay kadrajda şişe | Az miktarda su kalıntısı | |
+| Siyah kapaklı şişe | Dolu | |
+| Cam yüzey üzerinde şişe | Su içeriyor | %85 yükseklik oranı |
+
+Elle işaretlenen yüzdeler, fotoğrafta seçilen su çizgisinin şişe yüksekliğine oranıdır. Kaynaklarda ölçülmüş hacim yüzdeleri verilmediği için bu sonuçlarla hacim doğruluğu hesaplanamaz. Bir JPEG'in yön etiketindeki geçersiz değer MATLAB uyarısı verdi ve görüntü yine açıldı.
+
+[Gölgeli çekim](https://commons.wikimedia.org/wiki/File:Bottle_of_Water.jpg) · [Etiketli PET şişe](https://commons.wikimedia.org/wiki/File:Botella_de_pl%C3%A1stico_-_PET.jpg) · [Sokakta asılı şişe](https://commons.wikimedia.org/wiki/File:DSC_6417_A_half-filled_plastic_bottle_hanging_by_a_string_above_a_blurred_street_scene_at_dusk.jpg) · [Şeffaf şişe](https://commons.wikimedia.org/wiki/File:Clear_water_bottle.jpg) · [Kalıntı su bulunan şişe](https://commons.wikimedia.org/wiki/File:Empty_Plastic_Bottle.jpg) · [Siyah kapaklı şişe](https://commons.wikimedia.org/wiki/File:Cil%C3%ADndrica_botella_de_agua_con_tapa_negra.jpg) · [Cam yüzey üzerinde şişe](https://commons.wikimedia.org/wiki/File:Plastic_Water_Bottle.jpg)
